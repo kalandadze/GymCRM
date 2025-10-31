@@ -1,0 +1,32 @@
+[
+  {
+    "firstName": "Luka",
+    "lastName": "Kalandadze",
+    "username": "luka.kalandadze",
+    "password": "trainee123",
+    "active": true,
+    "birthDate": "2003-07-15",
+    "address": "Tbilisi, Georgia",
+    "userId": "TRN001"
+  },
+  {
+    "firstName": "Anna",
+    "lastName": "Petrova",
+    "username": "anna.petrova",
+    "password": "pass456",
+    "active": true,
+    "birthDate": "1999-11-20",
+    "address": "Batumi, Georgia",
+    "userId": "TRN002"
+  },
+  {
+    "firstName": "David",
+    "lastName": "Smith",
+    "username": "david.smith",
+    "password": "qwerty",
+    "active": false,
+    "birthDate": "1995-02-10",
+    "address": "Kutaisi, Georgia",
+    "userId": "TRN003"
+  }
+]

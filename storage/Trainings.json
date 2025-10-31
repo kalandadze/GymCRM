@@ -1,0 +1,26 @@
+[
+  {
+    "trainingName": "Morning Cardio Blast",
+    "traineeId": "TRN001",
+    "trainerId": "TRR002",
+    "trainingType": "CARDIO",
+    "trainingTime": "2025-10-30T09:00:00",
+    "duration": "PT1H"
+  },
+  {
+    "trainingName": "Evening Strength Session",
+    "traineeId":  "TRN002",
+    "trainerId":"TRR001",
+    "trainingType": "STRENGTH",
+    "trainingTime": "2025-10-31T18:30:00",
+    "duration": "PT1H30M"
+  },
+  {
+    "trainingName": "Morning Yoga Flow",
+    "traineeId": "TRN003",
+    "trainerId": "TRR003",
+    "trainingType": "YOGA",
+    "trainingTime": "2025-10-29T07:30:00",
+    "duration": "PT45M"
+  }
+]

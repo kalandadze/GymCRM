@@ -1,0 +1,32 @@
+[
+  {
+    "firstName": "Mariam",
+    "lastName": "Nikabadze",
+    "username": "mariam.nikabadze",
+    "password": "trainer123",
+    "active": true,
+    "specialization": "Strength Training",
+    "userId": "TRR001",
+    "trainingType": "STRENGTH"
+  },
+  {
+    "firstName": "John",
+    "lastName": "Doe",
+    "username": "john.doe",
+    "password": "strongman",
+    "active": true,
+    "specialization": "Cardio Fitness",
+    "userId": "TRR002",
+    "trainingType": "CARDIO"
+  },
+  {
+    "firstName": "Nino",
+    "lastName": "Beridze",
+    "username": "nino.beridze",
+    "password": "fitlife",
+    "active": false,
+    "specialization": "Yoga and Flexibility",
+    "userId": "TRR003",
+    "trainingType": "YOGA"
+  }
+]
