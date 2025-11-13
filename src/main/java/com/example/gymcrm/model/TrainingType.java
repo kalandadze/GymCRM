@@ -1,21 +1,21 @@
 package com.example.gymcrm.model;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.Immutable;
 
-import java.util.Objects;
-
-@Getter
-@AllArgsConstructor
-@EqualsAndHashCode
+@Data
+@NoArgsConstructor
+@Entity
+@Table(name = "traingTypes")
+@Immutable
 public class TrainingType {
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
   private String trainingTypeName;
 
-//  @Override
-//  public boolean equals(Object o) {
-//    if (o == null || getClass() != o.getClass()) return false;
-//    TrainingType that = (TrainingType) o;
-//    return Objects.equals(trainingTypeName, that.trainingTypeName);
-//  }
+  public TrainingType(String trainingTypeName) {
+    this.trainingTypeName = trainingTypeName;
+  }
 }

@@ -1,18 +1,30 @@
 package com.example.gymcrm.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.List;
 
-@Getter
-@AllArgsConstructor
+@Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@EqualsAndHashCode
+@Entity
+@Table(name = "trainees")
 public class Trainee extends User {
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
   private LocalDate birthDate;
   private String address;
   private String userId;
+  @OneToMany(mappedBy = "traineeId")
+  private List<Training> trainings;
+  @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+  @JoinTable(name = "trainee_trainer",
+    joinColumns = @JoinColumn(name = "trainee_id"),
+    inverseJoinColumns = {@JoinColumn(name = "trainer_id")})
+  private List<Trainer> trainers;
 
   public Trainee(String firstName, String lastName, LocalDate birthDate, String address, String userId) {
     super(firstName, lastName);
@@ -20,12 +32,5 @@ public class Trainee extends User {
     this.address = address;
     this.userId = userId;
   }
-
-//  @Override
-//  public boolean equals(Object o) {
-//    if (o == null || getClass() != o.getClass()) return false;
-//    if (!super.equals(o)) return false;
-//    Trainee trainee = (Trainee) o;
-//    return Objects.equals(birthDate, trainee.birthDate) && Objects.equals(address, trainee.address) && Objects.equals(userId, trainee.userId);
-//  }
 }
+
