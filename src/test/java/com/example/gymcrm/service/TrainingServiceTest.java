@@ -4,17 +4,13 @@ import com.example.gymcrm.model.Trainee;
 import com.example.gymcrm.model.Trainer;
 import com.example.gymcrm.model.Training;
 import com.example.gymcrm.model.TrainingType;
-import com.example.gymcrm.repository.TraineeRepository;
 import com.example.gymcrm.repository.TrainingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +30,7 @@ class TrainingServiceTest {
   @Test
   void createTrainer() {
     Training training = new Training("trainingName",new Trainee(),new Trainer(),new TrainingType("trainingType"), LocalDateTime.now(), 1.5);
-    trainingService.createTraining(training);
+    trainingService.save(training);
     Mockito.verify(trainingRepository).save(training);
   }
 

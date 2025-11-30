@@ -1,13 +1,14 @@
 package com.example.gymcrm.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class User {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -16,7 +17,7 @@ public abstract class User {
   private String lastName;
   private String username;
   private String password;
-  private boolean isActive;
+  private boolean isActive = false;
 
   public User(String firstName, String lastName) {
     this.firstName = firstName;
