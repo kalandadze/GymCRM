@@ -9,11 +9,13 @@ class PasswordGeneratorTest {
   void generatePasswordIsCorrectLength() {
     assertEquals(6, PasswordGenerator.generatePassword(6).length());
   }
+
   @Test
   void generatePasswordIsAllLetters() {
     String password = PasswordGenerator.generatePassword(20);
     assertTrue(password.matches("^[A-Za-z0-9]+$"));
   }
+
   @Test
   void passwordsShouldBeRandom() {
     String p1 = PasswordGenerator.generatePassword(10);

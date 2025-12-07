@@ -1,5 +1,7 @@
 package com.example.gymcrm.service;
 
+import com.example.gymcrm.config.GymMetrics;
+import com.example.gymcrm.model.LoginInfo;
 import com.example.gymcrm.model.Trainee;
 import com.example.gymcrm.model.Trainer;
 import com.example.gymcrm.model.Training;
@@ -19,72 +21,76 @@ import java.util.NoSuchElementException;
 @Transactional
 public class TraineeService {
   private final TraineeRepository repository;
+  private final GymMetrics metrics;
 
   @Autowired
-  public TraineeService(TraineeRepository repository) {
+  public TraineeService(TraineeRepository repository, GymMetrics metrics) {
     this.repository = repository;
+    this.metrics = metrics;
   }
 
-  public Trainee save(Trainee trainee) {
+  public LoginInfo save(Trainee trainee) {
     String username = trainee.getFirstName() + "." + trainee.getLastName();
     long count;
     if ((count = repository.countTraineesByUsernameLike(username)) != 0) username += count;
 
+    String password = PasswordGenerator.generatePassword(10);
     trainee.setUsername(username);
-    trainee.setPassword(PasswordGenerator.generatePassword(10));
+    trainee.setPassword(password);
     repository.save(trainee);
-    return trainee;
+    metrics.incrementTraineeCreatedCounter();
+    return new LoginInfo(trainee.getUsername(), password);
   }
 
-  public void deleteTrainee(String username, String password) {
-    getTrainee(username, password);
-    repository.delete(username, password);
+  public void deleteTrainee(String username) {
+    getTrainee(username);
+    repository.delete(username);
   }
 
-  public void updateTrainee(Trainee trainee) {
-    repository.save(trainee);
+  public void updateTrainee(Trainee trainee, String username) {
+    repository.update(trainee, username);
   }
 
-  public Trainee getTrainee(String username, String password) {
-    return repository.getTraineeByUsername(username, password).orElseThrow(() -> new NoSuchElementException("username or password is incorrect"));
+  public Trainee getTrainee(String username) {
+    return repository.getTraineeByUsername(username).orElseThrow(() -> new NoSuchElementException("username or password is incorrect"));
   }
 
-  public void changePassword(String username, String oldPassword, String newPassword) {
-    Trainee trainee = getTrainee(username, oldPassword);
+  public void changePassword(String username, String newPassword) {
+    Trainee trainee = getTrainee(username);
     trainee.setPassword(newPassword);
-    repository.update(trainee, trainee.getUsername(), oldPassword);
+    repository.update(trainee, trainee.getUsername());
   }
 
-  public void changeActivity(String username, String password, boolean activity) {
-    Trainee trainee = getTrainee(username, password);
+  public void changeActivity(String username, boolean activity) {
+    Trainee trainee = getTrainee(username);
     trainee.setActive(activity);
-    repository.update(trainee, trainee.getUsername(), password);
+    repository.update(trainee, trainee.getUsername());
   }
 
-  public List<Training> getTrainingsByUsernameAndCriteria(String username, String password, LocalDateTime startDate, LocalDateTime endDate, String trainerName, String trainingType) {
-    return repository.getTrainingsByUsernameAndCriteria(username, password, startDate, endDate, trainerName, trainingType);
+  public List<Training> getTrainingsByUsernameAndCriteria(String username, LocalDateTime startDate, LocalDateTime endDate, String trainerName, String trainingType) {
+    return repository.getTrainingsByUsernameAndCriteria(username, startDate, endDate, trainerName, trainingType);
   }
 
-  public List<Trainer> getTrainersByTraineeUsername(String username, String password) {
-    Trainee trainee = getTrainee(username, password);
+  public List<Trainer> getTrainersByTraineeUsername(String username) {
+    Trainee trainee = getTrainee(username);
     return trainee.getTrainers();
   }
 
-  public void addTrainer(String username, String password, Trainer trainer) {
-    Trainee trainee = getTrainee(username, password);
+  public void addTrainer(String username, Trainer trainer) {
+    Trainee trainee = getTrainee(username);
     trainee.getTrainers().add(trainer);
-    repository.update(trainee, trainee.getUsername(), password);
+    repository.update(trainee, trainee.getUsername());
   }
 
-  public void removeTrainer(String username, String password, String trainerUsername) {
-    Trainee trainee = getTrainee(username, password);
+  public void removeTrainer(String username, String trainerUsername) {
+    Trainee trainee = getTrainee(username);
     List<Trainer> trainers = trainee.getTrainers();
     Trainer trainer = trainers.stream().filter(it -> it.getUsername().equals(trainerUsername)).findFirst().orElseThrow();
     trainers.remove(trainer);
-    repository.update(trainee, trainee.getUsername(), password);
+    repository.update(trainee, trainee.getUsername());
   }
 
   public Trainee getTraineeByUsername(String traineeUsername) {
-    return repository.getTraineeByUsername(traineeUsername).orElseThrow(()->new NoSuchElementException("no trainee with username: "+traineeUsername+" found"));
+    return repository.getTraineeByUsername(traineeUsername).orElseThrow(() -> new NoSuchElementException("no trainee with username: " + traineeUsername + " found"));
   }
 }

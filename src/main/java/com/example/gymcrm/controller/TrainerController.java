@@ -11,14 +11,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -52,8 +49,7 @@ public class TrainerController {
     trainer.setLastName(lastName);
     trainer.setSpecialization(specialization);
     try {
-      trainer = service.save(trainer);
-      LoginInfo loginInfo = new LoginInfo(trainer.getUsername(), trainer.getPassword());
+      LoginInfo loginInfo = service.save(trainer);
       return ResponseEntity.ok().body(loginInfo);
     } catch (Exception e) {
       log.error(e.getMessage());
@@ -73,11 +69,10 @@ public class TrainerController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> getTrainerProfile(@CookieValue("username") String username, @CookieValue("password") String password) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+  public ResponseEntity<?> getTrainerProfile(@AuthenticationPrincipal UserDetails user) {
+    String username = user.getUsername();
     try {
-      Trainer trainer = service.getTrainer(username, password);
+      Trainer trainer = service.getTrainer(username);
       return ResponseEntity.ok().body(ModelConverter.convert(trainer));
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
@@ -99,21 +94,19 @@ public class TrainerController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> updateTrainerProfile(@CookieValue("username") String username, @CookieValue("password") String password,
+  public ResponseEntity<?> updateTrainerProfile(@AuthenticationPrincipal UserDetails user,
                                                 @RequestParam String newUsername, @RequestParam String firstName, @RequestParam String lastName,
                                                 @RequestParam(required = false) String specialization, @RequestParam boolean isActive) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+    String username = user.getUsername();
     try {
-      Trainer trainer = service.getTrainer(username, password);
+      Trainer trainer = new Trainer();
       trainer.setUsername(newUsername);
       trainer.setFirstName(firstName);
       trainer.setLastName(lastName);
-      if (specialization != null) trainer.setSpecialization(specialization);
+      trainer.setSpecialization(specialization);
       trainer.setActive(isActive);
-      service.updateTrainer(trainer);
-      ResponseCookie usernameCookie = encodedCookie("username", newUsername);
-      return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, usernameCookie.toString()).body(ModelConverter.convert(trainer));
+      service.updateTrainer(trainer, username);
+      return ResponseEntity.ok().body(ModelConverter.convert(trainer));
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
       return ResponseEntity.status(401).body(e.getMessage());
@@ -135,11 +128,10 @@ public class TrainerController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> getTrainerTrainings(@CookieValue("username") String username, @CookieValue("password") String password, @RequestParam(required = false) LocalDateTime periodFrom, @RequestParam(required = false) LocalDateTime periodTo, @RequestParam(required = false) String traineeName) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+  public ResponseEntity<?> getTrainerTrainings(@AuthenticationPrincipal UserDetails user, @RequestParam(required = false) LocalDateTime periodFrom, @RequestParam(required = false) LocalDateTime periodTo, @RequestParam(required = false) String traineeName) {
+    String username = user.getUsername();
     try {
-      Trainer trainer = service.getTrainer(username, password);
+      Trainer trainer = service.getTrainer(username);
 //      List<Training> trainings = service.getTrainingsByUsernameAndCriteria(username, password, periodFrom, periodTo, traineeName);
       Predicate<Training> predicate = s -> true;
       if (periodFrom != null) predicate = predicate.and(s -> s.getTrainingTime().isAfter(periodFrom));
@@ -168,11 +160,10 @@ public class TrainerController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> changeActivity(@CookieValue("username") String username, @CookieValue("password") String password, @RequestParam Boolean isActive) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+  public ResponseEntity<?> changeActivity(@AuthenticationPrincipal UserDetails user, @RequestParam Boolean isActive) {
+    String username = user.getUsername();
     try {
-      service.updateActivity(username, password, isActive);
+      service.updateActivity(username, isActive);
       return ResponseEntity.status(204).build();
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
@@ -181,13 +172,5 @@ public class TrainerController {
       log.error(e.getMessage());
       return ResponseEntity.status(500).body("Application failed to process the request");
     }
-  }
-
-  private String decodeCookie(String encodedCookie) {
-    return URLDecoder.decode(encodedCookie, StandardCharsets.UTF_8);
-  }
-
-  private ResponseCookie encodedCookie(String contentName, String contentValue) {
-    return ResponseCookie.from(contentName, URLEncoder.encode(contentValue, StandardCharsets.UTF_8)).httpOnly(true).path("/").build();
   }
 }

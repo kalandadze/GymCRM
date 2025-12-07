@@ -29,7 +29,7 @@ class TrainingServiceTest {
 
   @Test
   void createTrainer() {
-    Training training = new Training("trainingName",new Trainee(),new Trainer(),new TrainingType("trainingType"), LocalDateTime.now(), 1.5);
+    Training training = new Training("trainingName", new Trainee(), new Trainer(), new TrainingType("trainingType"), LocalDateTime.now(), 1.5);
     trainingService.save(training);
     Mockito.verify(trainingRepository).save(training);
   }
@@ -38,7 +38,7 @@ class TrainingServiceTest {
   void getTrainer() {
     List<Training> trainings = new ArrayList<>();
     for (int i = 1; i <= 5; i++) {
-      Training training = new Training("trainingName"+i,new Trainee(),new Trainer(),new TrainingType("trainingType"+i), LocalDateTime.now(), 1.5);
+      Training training = new Training("trainingName" + i, new Trainee(), new Trainer(), new TrainingType("trainingType" + i), LocalDateTime.now(), 1.5);
       trainings.add(training);
     }
     Mockito.when(trainingRepository.getAll()).thenReturn(trainings);

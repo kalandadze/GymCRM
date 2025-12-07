@@ -15,7 +15,7 @@ public class ModelConverter {
       .dateOfBirth(trainee.getBirthDate())
       .Address(trainee.getAddress())
       .IsActive(trainee.isActive())
-      .trainersList(trainee.getTrainers().stream().map(ModelConverter::convertTrainer).toList()).build();
+      .trainersList((trainee.getTrainers() == null) ? null : trainee.getTrainers().stream().map(ModelConverter::convertTrainer).toList()).build();
   }
 
   public static TraineeProfile.TrainerProfile convertTrainer(Trainer trainer) {
@@ -32,7 +32,7 @@ public class ModelConverter {
       .lastName(trainer.getLastName())
       .specialization(trainer.getSpecialization())
       .IsActive(trainer.isActive())
-      .traineesList(trainer.getTrainees().stream().map(ModelConverter::convertTrainees).toList()).build();
+      .traineesList((trainer.getTrainees() == null) ? null : trainer.getTrainees().stream().map(ModelConverter::convertTrainees).toList()).build();
   }
 
   public static TrainerProfile.TraineeProfile convertTrainees(Trainee trainer) {

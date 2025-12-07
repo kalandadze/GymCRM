@@ -1,20 +1,15 @@
 package com.example.gymcrm.repository.postgresImplementation;
 
-import com.example.gymcrm.model.Trainee;
-import com.example.gymcrm.model.Trainer;
-import com.example.gymcrm.model.Training;
-import com.example.gymcrm.model.TrainingType;
+import com.example.gymcrm.model.*;
 import com.example.gymcrm.repository.TraineeRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
+import com.example.gymcrm.repository.UserRepository;
+import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import jakarta.transaction.Transactional;
-import org.springframework.context.annotation.Primary;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -24,12 +19,20 @@ import java.util.Optional;
 @Repository
 @Transactional
 public class TraineeRepositoryPostgresImplementation implements TraineeRepository {
+  private final PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
   @PersistenceContext
   private EntityManager entityManager;
+
+  public TraineeRepositoryPostgresImplementation(PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    this.passwordEncoder = passwordEncoder;
+    this.userRepository = userRepository;
+  }
 
   @Override
   public void save(Trainee trainee) {
     if (trainee.getId() == null) {
+      trainee.setPassword(passwordEncoder.encode(trainee.getPassword()));
       entityManager.persist(trainee);
     } else {
       entityManager.merge(trainee);
@@ -37,14 +40,25 @@ public class TraineeRepositoryPostgresImplementation implements TraineeRepositor
   }
 
   @Override
-  public void update(Trainee trainee, String username, String password) {
-    getTraineeByUsername(username, password);
-    entityManager.merge(trainee);
+  public void update(Trainee trainee, String username) {
+    if (!trainee.getUsername().equals(username)) {
+      Optional<GymUser> duplicate = userRepository.findByUsername(trainee.getUsername());
+      if (duplicate.isPresent())
+        throw new EntityExistsException("user with username:" + trainee.getUsername() + " already exists");
+    }
+    Trainee oldTrainee = getTraineeByUsername(username).orElseThrow(EntityNotFoundException::new);
+    oldTrainee.setUsername(trainee.getUsername());
+    oldTrainee.setFirstName(trainee.getFirstName());
+    oldTrainee.setLastName(trainee.getLastName());
+    if (trainee.getAddress() != null) oldTrainee.setAddress(trainee.getAddress());
+    if (trainee.getBirthDate() != null) oldTrainee.setBirthDate(trainee.getBirthDate());
+    oldTrainee.setActive(trainee.isActive());
+    entityManager.merge(oldTrainee);
   }
 
   @Override
-  public void delete(String username, String password) {
-    Trainee trainee = getTraineeByUsername(username, password).orElseThrow(() -> new RuntimeException("username or password is incorrect"));
+  public void delete(String username) {
+    Trainee trainee = getTraineeByUsername(username).orElseThrow(() -> new RuntimeException("username or password is incorrect"));
     if (entityManager.contains(trainee)) {
       entityManager.remove(trainee);
     } else {
@@ -54,10 +68,9 @@ public class TraineeRepositoryPostgresImplementation implements TraineeRepositor
   }
 
   @Override
-  public Optional<Trainee> getTraineeByUsername(String username, String password) {
-    Query query = entityManager.createQuery("SELECT t FROM User as t WHERE t.username=:username and password=:password");
+  public Optional<Trainee> getTraineeByUsername(String username) {
+    Query query = entityManager.createQuery("SELECT t FROM GymUser as t WHERE t.username=:username");
     query.setParameter("username", username);
-    query.setParameter("password", password);
     try {
       Trainee trainee = (Trainee) query.getSingleResult();
       return Optional.of(trainee);
@@ -68,13 +81,13 @@ public class TraineeRepositoryPostgresImplementation implements TraineeRepositor
 
   @Override
   public long countTraineesByUsernameLike(String username) {
-    Query query = entityManager.createQuery("SELECT count(t) FROM User as t WHERE t.username like :username");
+    Query query = entityManager.createQuery("SELECT count(t) FROM GymUser as t WHERE t.username like :username");
     query.setParameter("username", username + "%");
     return (Long) query.getSingleResult();
   }
 
   @Override
-  public List<Training> getTrainingsByUsernameAndCriteria(String username, String password, LocalDateTime startDate, LocalDateTime endDate, String trainerName, String trainingType) {
+  public List<Training> getTrainingsByUsernameAndCriteria(String username, LocalDateTime startDate, LocalDateTime endDate, String trainerName, String trainingType) {
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<Training> criteriaQuery = builder.createQuery(Training.class);
     Root<Training> trainingRoot = criteriaQuery.from(Training.class);
@@ -84,7 +97,6 @@ public class TraineeRepositoryPostgresImplementation implements TraineeRepositor
     Join<Training, TrainingType> trainingTypeJoin = trainingRoot.join("trainingType");
     criteriaQuery.select(trainingRoot)
       .where(builder.equal(traineeJoin.get("username"), username),
-        builder.equal(traineeJoin.get("password"), password),
         builder.greaterThan(trainingRoot.get("trainingTime"), startDate),
         builder.lessThan(trainingRoot.get("trainingTime"), endDate),
         builder.equal(trainerJoin.get("firstName"), trainerName),
@@ -94,14 +106,9 @@ public class TraineeRepositoryPostgresImplementation implements TraineeRepositor
   }
 
   @Override
-  public Optional<Trainee> getTraineeByUsername(String traineeUsername) {
-    Query query = entityManager.createQuery("SELECT t FROM User as t WHERE t.username=:username");
-    query.setParameter("username", traineeUsername);
-    try {
-      Trainee trainee = (Trainee) query.getSingleResult();
-      return Optional.of(trainee);
-    } catch (NoResultException e) {
-      return Optional.empty();
-    }
+  public List<Training> getAll() {
+    Query query = entityManager.createQuery("SELECT t FROM Training as t");
+    return (List<Training>) query.getResultList();
   }
+
 }

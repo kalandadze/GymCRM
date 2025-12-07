@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "trainers")
-public class Trainer extends User {
+public class Trainer extends GymUser {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
