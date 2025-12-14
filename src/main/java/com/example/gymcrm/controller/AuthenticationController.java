@@ -1,6 +1,5 @@
 package com.example.gymcrm.controller;
 
-import com.example.gymcrm.model.GymUser;
 import com.example.gymcrm.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -8,6 +7,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +30,7 @@ public class AuthenticationController {
   @ApiResponses(value = {
     @ApiResponse(code = 200, message = "Successfully logged in"),
     @ApiResponse(code = 401, message = "Your username or password is incorrect"),
+    @ApiResponse(code = 403, message = "You are blocked from trying to log in for 5 minutes"),
     @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
     @ApiResponse(code = 422, message = "Application failed due to receiving invalid field in the request"),
     @ApiResponse(code = 500, message = "Application failed to process the request")
@@ -38,11 +39,14 @@ public class AuthenticationController {
   @Deprecated
   public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
     try {
-      GymUser user = userService.getUserByUsernameAndPassword(username, password);
-      return ResponseEntity.ok().build();
+      String token = userService.login(username, password);
+      return ResponseEntity.ok().body(token);
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
       return ResponseEntity.status(401).body(e.getMessage());
+    } catch (AccessDeniedException e) {
+      log.error(e.getMessage());
+      return ResponseEntity.status(403).body(e.getMessage());
     } catch (Exception e) {
       log.error(e.getMessage());
       return ResponseEntity.status(500).body("Application failed to process the request");

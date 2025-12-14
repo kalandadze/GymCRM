@@ -1,4 +1,4 @@
-package com.example.gymcrm.service;
+package com.example.gymcrm.config;
 
 import com.example.gymcrm.model.GymUser;
 import com.example.gymcrm.model.Trainee;

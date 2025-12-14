@@ -142,7 +142,7 @@ public class TraineeController {
     String username = user.getUsername();
     try {
       service.deleteTrainee(username);
-      return ResponseEntity.status(204).body("Successfully deleted the trainee profile");
+      return ResponseEntity.status(204).build();
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
       return ResponseEntity.status(401).body(e.getMessage());
@@ -191,7 +191,7 @@ public class TraineeController {
   }
   )
   @Transactional
-  public ResponseEntity<?> AssignTrainers(@AuthenticationPrincipal UserDetails user, @RequestBody List<String> trainersUsernames) {
+  public ResponseEntity<?> updateTraineeTrainers(@AuthenticationPrincipal UserDetails user, @RequestBody List<String> trainersUsernames) {
     String username = user.getUsername();
     try {
       Trainee trainee = service.getTrainee(username);
@@ -243,7 +243,7 @@ public class TraineeController {
     }
   }
 
-  @PatchMapping("/Activity")
+  @PatchMapping("/activity")
   @ApiOperation(value = "activate or deactivate your trainee profile")
   @ApiResponses(value = {
     @ApiResponse(code = 204, message = "Successfully activated/deactivated your trainee profile"),

@@ -149,7 +149,7 @@ public class TrainerController {
   }
 
 
-  @PatchMapping("/Activity")
+  @PatchMapping("/activity")
   @ApiOperation(value = "activate or deactivate your trainer profile")
   @ApiResponses(value = {
     @ApiResponse(code = 204, message = "Successfully activated/deactivated your trainer profile"),

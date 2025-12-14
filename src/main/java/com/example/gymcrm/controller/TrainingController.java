@@ -38,7 +38,7 @@ public class TrainingController {
   @PostMapping
   @ApiOperation(value = "add a training to the database")
   @ApiResponses(value = {
-    @ApiResponse(code = 204, message = "Successfully added the trainee"),
+    @ApiResponse(code = 201, message = "Successfully added the trainee"),
     @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
     @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
     @ApiResponse(code = 404, message = "The resource you were trying to reach is not found"),
@@ -61,7 +61,7 @@ public class TrainingController {
       trainee.getTrainings().add(training);
       trainer.getTrainingList().add(training);
       service.save(training);
-      return ResponseEntity.status(204).build();
+      return ResponseEntity.status(201).build();
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
       return ResponseEntity.status(422).body(e.getMessage());
@@ -72,7 +72,7 @@ public class TrainingController {
   }
 
   @GetMapping("/types")
-  @ApiOperation(value = "add all training types from the database")
+  @ApiOperation(value = "get all training types from the database")
   @ApiResponses(value = {
     @ApiResponse(code = 200, message = "Successfully returned all training types"),
     @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
