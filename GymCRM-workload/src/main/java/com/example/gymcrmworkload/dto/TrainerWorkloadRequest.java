@@ -2,7 +2,6 @@ package com.example.gymcrmworkload.dto;
 
 import lombok.Data;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Data

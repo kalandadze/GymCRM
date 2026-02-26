@@ -2,20 +2,19 @@ package com.example.gymcrmworkload.service;
 
 import com.example.gymcrmworkload.dto.TrainerWorkloadRequest;
 import com.example.gymcrmworkload.model.TrainerWorkload;
-import com.example.gymcrmworkload.repository.TrainerRepository;
+import com.example.gymcrmworkload.repository.TrainerWorkloadRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Month;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 @Service
 @Slf4j
 public class TrainerWorkloadService {
-    private final TrainerRepository trainerRepository;
+    private final TrainerWorkloadRepository trainerRepository;
 
-    public TrainerWorkloadService(TrainerRepository trainerRepository) {
+    public TrainerWorkloadService(TrainerWorkloadRepository trainerRepository) {
         this.trainerRepository = trainerRepository;
     }
 
@@ -26,15 +25,14 @@ public class TrainerWorkloadService {
                         .firstName(trainerWorkloadRequest.getFirstName())
                         .lastName(trainerWorkloadRequest.getLastName())
                         .isActive(trainerWorkloadRequest.isActive())
-                        .trainingSummery(new HashMap<>())
+                        .trainingSummery(new ArrayList<>())
                         .build()
         );
 
         Month month = trainerWorkloadRequest.getTrainingDate().getMonth();
         int year = trainerWorkloadRequest.getTrainingDate().getYear();
-        Map<Integer, TrainerWorkload.YearlyWorkloadOverview> yearlyWorkloadOverviewMap = trainerWorkload.getTrainingSummery();
+        TrainerWorkload.YearlyWorkloadOverview yearlyWorkloadOverview = trainerWorkload.getYearlyWorkloadOverview(year);
 
-        TrainerWorkload.YearlyWorkloadOverview yearlyWorkloadOverview = yearlyWorkloadOverviewMap.compute(year, (k, v) -> v == null ? new TrainerWorkload.YearlyWorkloadOverview() : v);
         yearlyWorkloadOverview.addMonthlyWorkload(month,
                 ((trainerWorkloadRequest.getActionType().equals(TrainerWorkloadRequest.ActionType.ADD) ? 1 : -1) * trainerWorkloadRequest.getDuration())
         );
