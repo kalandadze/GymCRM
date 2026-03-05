@@ -29,6 +29,7 @@ public class TrainerWorkloadListener {
             validate(trainerWorkloadRequest);
             trainerWorkloadService.handleNewTrainerWorkload(trainerWorkloadRequest);
         } catch (Exception e) {
+            log.error("TrainerWorkloadRequest received error", e);
             jmsTemplate.convertAndSend(INVALID_REQUEST_QUEUE, trainerWorkloadRequest);
         }
     }
