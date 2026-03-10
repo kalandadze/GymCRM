@@ -23,7 +23,7 @@ class TrainerServiceTest {
   @Test
   void createTrainer() {
     Trainer trainer = new Trainer("name", "lname","specilization","userID",new TrainingType("training Type"));
-    trainerService.createTrainer(trainer);
+    trainerService.save(trainer);
     Mockito.verify(trainerRepository).save(trainer);
   }
 

@@ -26,7 +26,7 @@ class TraineeServiceTest {
   @Test
   void createTrainer() {
     Trainee trainee = new Trainee("name", "lname", LocalDate.of(2001,12,12),"address","userID");
-    traineeService.createTrainee(trainee);
+    traineeService.save(trainee);
     Mockito.verify(traineeRepository).save(trainee);
   }
 
