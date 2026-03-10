@@ -1,10 +1,16 @@
 package com.example.gymcrmworkload.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class TrainerWorkloadRequest {
     private String firstName;
     private String lastName;
