@@ -7,7 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Month;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -18,6 +19,7 @@ public class TrainerWorkloadService {
         this.trainerRepository = trainerRepository;
     }
 
+
     public void handleNewTrainerWorkload(TrainerWorkloadRequest trainerWorkloadRequest) {
         TrainerWorkload trainerWorkload = trainerRepository.findByUsername(trainerWorkloadRequest.getUsername()).orElse(
                 TrainerWorkload.builder()
@@ -25,18 +27,20 @@ public class TrainerWorkloadService {
                         .firstName(trainerWorkloadRequest.getFirstName())
                         .lastName(trainerWorkloadRequest.getLastName())
                         .isActive(trainerWorkloadRequest.isActive())
-                        .trainingSummery(new ArrayList<>())
+                        .trainingSummery(new HashMap<>())
                         .build()
         );
 
         Month month = trainerWorkloadRequest.getTrainingDate().getMonth();
         int year = trainerWorkloadRequest.getTrainingDate().getYear();
-        TrainerWorkload.YearlyWorkloadOverview yearlyWorkloadOverview = trainerWorkload.getYearlyWorkloadOverview(year);
+        Map<Integer, TrainerWorkload.YearlyWorkloadOverview> yearlyWorkloadOverviewMap = trainerWorkload.getTrainingSummery();
 
+        TrainerWorkload.YearlyWorkloadOverview yearlyWorkloadOverview = yearlyWorkloadOverviewMap.compute(year, (k, v) -> v == null ? new TrainerWorkload.YearlyWorkloadOverview() : v);
         yearlyWorkloadOverview.addMonthlyWorkload(month,
                 ((trainerWorkloadRequest.getActionType().equals(TrainerWorkloadRequest.ActionType.ADD) ? 1 : -1) * trainerWorkloadRequest.getDuration())
         );
         trainerRepository.save(trainerWorkload);
+        log.info("Trainer's Workload has been saved successfully");
     }
 
 
