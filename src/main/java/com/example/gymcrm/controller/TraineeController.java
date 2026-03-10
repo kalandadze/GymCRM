@@ -7,20 +7,19 @@ import com.example.gymcrm.model.Training;
 import com.example.gymcrm.model.dto.TraineeProfile;
 import com.example.gymcrm.service.TraineeService;
 import com.example.gymcrm.service.TrainerService;
+import com.example.gymcrm.service.UserService;
 import com.example.gymcrm.utils.ModelConverter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,11 +33,13 @@ import java.util.function.Predicate;
 public class TraineeController {
   private final TraineeService service;
   private final TrainerService trainerService;
+  private final UserService userService;
 
 
-  public TraineeController(TraineeService service, TrainerService trainerService) {
+  public TraineeController(TraineeService service, TrainerService trainerService, UserService userService) {
     this.service = service;
     this.trainerService = trainerService;
+    this.userService = userService;
   }
 
   @PostMapping
@@ -59,8 +60,7 @@ public class TraineeController {
     trainee.setAddress(address);
     if (dateOfBirth != null) trainee.setBirthDate(dateOfBirth);
     try {
-      trainee = service.save(trainee);
-      LoginInfo loginInfo = new LoginInfo(trainee.getUsername(), trainee.getPassword());
+      LoginInfo loginInfo = service.save(trainee);
       return ResponseEntity.ok().body(loginInfo);
     } catch (Exception e) {
       log.error(e.getMessage());
@@ -79,11 +79,10 @@ public class TraineeController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> getTraineeProfile(@CookieValue("username") String username, @CookieValue("password") String password) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+  public ResponseEntity<?> getTraineeProfile(@AuthenticationPrincipal UserDetails user) {
+    String username = user.getUsername();
     try {
-      Trainee trainee = service.getTrainee(username, password);
+      Trainee trainee = service.getTrainee(username);
       return ResponseEntity.ok().body(ModelConverter.convert(trainee));
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
@@ -105,23 +104,20 @@ public class TraineeController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> updateTraineeProfile(@CookieValue("username") String username, @CookieValue("password") String password,
+  public ResponseEntity<?> updateTraineeProfile(@AuthenticationPrincipal UserDetails user,
                                                 @RequestParam String newUsername, @RequestParam String firstName, @RequestParam String lastName,
                                                 @RequestParam(required = false) LocalDate dateOfBirth, @RequestParam(required = false) String address, @RequestParam boolean isActive) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+    String username = user.getUsername();
     try {
-      Trainee trainee = service.getTrainee(username, password);
+      Trainee trainee = new Trainee();
       trainee.setUsername(newUsername);
       trainee.setFirstName(firstName);
       trainee.setLastName(lastName);
-      if (dateOfBirth != null)
-        trainee.setBirthDate(dateOfBirth);
-      if (address != null) trainee.setAddress(address);
+      trainee.setBirthDate(dateOfBirth);
+      trainee.setAddress(address);
       trainee.setActive(isActive);
-      service.updateTrainee(trainee);
-      ResponseCookie usernameCookie = encodedCookie("username", newUsername);
-      return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, usernameCookie.toString()).body(ModelConverter.convert(trainee));
+      service.updateTrainee(trainee, username);
+      return ResponseEntity.ok().body(ModelConverter.convert(trainee));
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
       return ResponseEntity.status(401).body(e.getMessage());
@@ -142,11 +138,10 @@ public class TraineeController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> deleteTraineeProfile(@CookieValue("username") String username, @CookieValue("password") String password) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+  public ResponseEntity<?> deleteTraineeProfile(@AuthenticationPrincipal UserDetails user) {
+    String username = user.getUsername();
     try {
-      service.deleteTrainee(username, password);
+      service.deleteTrainee(username);
       return ResponseEntity.status(204).body("Successfully deleted the trainee profile");
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
@@ -168,11 +163,10 @@ public class TraineeController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> getNotAssignedTrainers(@CookieValue("username") String username, @CookieValue("password") String password) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+  public ResponseEntity<?> getNotAssignedTrainers(@AuthenticationPrincipal UserDetails user) {
+    String username = user.getUsername();
     try {
-      Trainee trainee = service.getTrainee(username, password);
+      Trainee trainee = service.getTrainee(username);
       List<TraineeProfile.TrainerProfile> trainers = trainerService.getAllTrainers().stream().filter(trainer -> !trainer.getTrainees().contains(trainee)).map(ModelConverter::convertTrainer).toList();
       return ResponseEntity.status(200).body(trainers);
     } catch (NoSuchElementException e) {
@@ -196,16 +190,16 @@ public class TraineeController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> getNotAssignedTrainers(@CookieValue("username") String username, @CookieValue("password") String password, @RequestBody List<String> trainersUsernames) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+  @Transactional
+  public ResponseEntity<?> AssignTrainers(@AuthenticationPrincipal UserDetails user, @RequestBody List<String> trainersUsernames) {
+    String username = user.getUsername();
     try {
-      Trainee trainee = service.getTrainee(username, password);
+      Trainee trainee = service.getTrainee(username);
       for (String trainerUsername : trainersUsernames) {
         Trainer trainer = trainerService.getTrainerByUsername(trainerUsername);
         trainee.getTrainers().add(trainer);
+        trainer.getTrainees().add(trainee);
       }
-      service.updateTrainee(trainee);
       return ResponseEntity.status(200).body(trainee.getTrainers().stream().map(ModelConverter::convertTrainer).toList());
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
@@ -227,14 +221,14 @@ public class TraineeController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> getTraineeTrainings(@CookieValue("username") String username, @CookieValue("password") String password, @RequestParam(required = false) LocalDateTime periodFrom, @RequestParam(required = false) LocalDateTime periodTo, @RequestParam(required = false) String trainerName, @RequestParam(required = false) String trainingType) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+  public ResponseEntity<?> getTraineeTrainings(@AuthenticationPrincipal UserDetails user, @RequestParam(required = false) LocalDateTime periodFrom, @RequestParam(required = false) LocalDateTime periodTo, @RequestParam(required = false) String trainerName, @RequestParam(required = false) String trainingType) {
+    String username = user.getUsername();
     try {
-      Trainee trainee = service.getTrainee(username, password);
+      Trainee trainee = service.getTrainee(username);
 //      List<Training> trainings = service.getTrainingsByUsernameAndCriteria(username, password, periodFrom, periodTo, trainerName, trainingType);
       Predicate<Training> predicate = s -> true;
-      if (trainingType != null) predicate = predicate.and(s -> s.getTrainingType() != null && s.getTrainingType().getTrainingTypeName().equals(trainingType));
+      if (trainingType != null)
+        predicate = predicate.and(s -> s.getTrainingType() != null && s.getTrainingType().getTrainingTypeName().equals(trainingType));
       if (trainerName != null) predicate = predicate.and(s -> s.getTrainerId().getFirstName().equals(trainerName));
       if (periodFrom != null) predicate = predicate.and(s -> s.getTrainingTime().isAfter(periodFrom));
       if (periodTo != null) predicate = predicate.and(s -> s.getTrainingTime().isBefore(periodTo));
@@ -260,11 +254,10 @@ public class TraineeController {
     @ApiResponse(code = 500, message = "Application failed to process the request")
   }
   )
-  public ResponseEntity<?> changeActivity(@CookieValue("username") String username, @CookieValue("password") String password, @RequestParam Boolean isActive) {
-    username = decodeCookie(username);
-    password = decodeCookie(password);
+  public ResponseEntity<?> changeActivity(@AuthenticationPrincipal UserDetails user, @RequestParam Boolean isActive) {
+    String username = user.getUsername();
     try {
-      service.changeActivity(username, password, isActive);
+      service.changeActivity(username, isActive);
       return ResponseEntity.status(204).build();
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());
@@ -273,14 +266,6 @@ public class TraineeController {
       log.error(e.getMessage());
       return ResponseEntity.status(500).body("Application failed to process the request");
     }
-  }
-
-  private String decodeCookie(String encodedCookie) {
-    return URLDecoder.decode(encodedCookie, StandardCharsets.UTF_8);
-  }
-
-  private ResponseCookie encodedCookie(String contentName, String contentValue) {
-    return ResponseCookie.from(contentName, URLEncoder.encode(contentValue, StandardCharsets.UTF_8)).httpOnly(true).path("/").build();
   }
 
 }

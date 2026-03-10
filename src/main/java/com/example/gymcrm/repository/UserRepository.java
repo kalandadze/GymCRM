@@ -1,11 +1,15 @@
 package com.example.gymcrm.repository;
 
-import com.example.gymcrm.model.User;
+import com.example.gymcrm.model.GymUser;
 
 import java.util.Optional;
 
 public interface UserRepository {
-  Optional<User> findByUsernameAndPassword(String username, String password);
+  Optional<GymUser> findByUsernameAndPassword(String username, String password);
 
-  void save(User user);
+  Optional<GymUser> findByUsername(String username);
+
+  void save(GymUser user);
+
+  void updatePassword(GymUser user);
 }

@@ -1,7 +1,6 @@
 package com.example.gymcrm.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

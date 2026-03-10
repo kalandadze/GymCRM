@@ -2,7 +2,6 @@ package com.example.gymcrm.service;
 
 import com.example.gymcrm.model.Trainee;
 import com.example.gymcrm.repository.TraineeRepository;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -10,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class TraineeServiceTest {
@@ -25,41 +24,41 @@ class TraineeServiceTest {
 
   @Test
   void createTrainer() {
-    Trainee trainee = new Trainee("name", "lname", LocalDate.of(2001,12,12),"address","userID");
+    Trainee trainee = new Trainee("name", "lname", LocalDate.of(2001, 12, 12), "address", "userID");
     traineeService.save(trainee);
     Mockito.verify(traineeRepository).save(trainee);
   }
 
   @Test
   void getTrainer() {
-    Trainee trainee = new Trainee("name", "lname", LocalDate.of(2001,12,12),"address","userID");
-    Mockito.when(traineeRepository.getTraineeByUsername("name.lname","password")).thenReturn(trainee);
-    assertEquals(trainee, traineeService.getTrainee("name.lname", "password"));
+    Trainee trainee = new Trainee("name", "lname", LocalDate.of(2001, 12, 12), "address", "userID");
+    Mockito.when(traineeRepository.getTraineeByUsername("name.lname")).thenReturn(trainee);
+    assertEquals(trainee, traineeService.getTrainee("name.lname"));
   }
 
   @Test
   void updateTraineeActivity() {
-    Trainee trainee = new Trainee("name", "lname", LocalDate.of(2001,12,12),"address","userID");
+    Trainee trainee = new Trainee("name", "lname", LocalDate.of(2001, 12, 12), "address", "userID");
     trainee.setUsername("name.lname");
-    Mockito.when(traineeRepository.getTraineeByUsername("name.lname","password")).thenReturn(trainee);
-    traineeService.changeActivity("name.lname","password",true);
+    Mockito.when(traineeRepository.getTraineeByUsername("name.lname")).thenReturn(trainee);
+    traineeService.changeActivity("name.lname", true);
     assertTrue(trainee.isActive());
 
-    Mockito.verify(traineeRepository).update(trainee,"name.lname","password");
+    Mockito.verify(traineeRepository).update(trainee, "name.lname");
 
-    traineeService.changeActivity("name.lname","password",false);
+    traineeService.changeActivity("name.lname", false);
     assertFalse(trainee.isActive());
   }
 
   @Test
   void updateTraineePassword() {
-    Trainee trainee = new Trainee("name", "lname", LocalDate.of(2001,12,12),"address","userID");
+    Trainee trainee = new Trainee("name", "lname", LocalDate.of(2001, 12, 12), "address", "userID");
     trainee.setUsername("name.lname");
-    Mockito.when(traineeRepository.getTraineeByUsername("name.lname","password")).thenReturn(trainee);
+    Mockito.when(traineeRepository.getTraineeByUsername("name.lname")).thenReturn(trainee);
 
-    traineeService.changePassword("name.lname","password","new password");
+    traineeService.changePassword("name.lname", "new password");
     assertEquals("new password", trainee.getPassword());
 
-    Mockito.verify(traineeRepository).update(trainee,"name.lname","password");
+    Mockito.verify(traineeRepository).update(trainee, "name.lname");
   }
 }

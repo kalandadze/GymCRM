@@ -1,5 +1,6 @@
 package com.example.gymcrm.service;
 
+import com.example.gymcrm.config.GymMetrics;
 import com.example.gymcrm.model.Training;
 import com.example.gymcrm.model.TrainingType;
 import com.example.gymcrm.repository.TrainingRepository;
@@ -16,14 +17,17 @@ import java.util.List;
 @Transactional
 public class TrainingService {
   private final TrainingRepository repository;
+  private final GymMetrics metrics;
 
   @Autowired
-  public TrainingService(TrainingRepository trainingRepository) {
+  public TrainingService(TrainingRepository trainingRepository, GymMetrics metrics) {
     this.repository = trainingRepository;
+    this.metrics = metrics;
   }
 
   public void save(Training training) {
     repository.save(training);
+    metrics.incrementTrainingCreatedCounter();
   }
 
   public List<Training> getTrainings() {

@@ -61,8 +61,6 @@ public class TrainingController {
       trainee.getTrainings().add(training);
       trainer.getTrainingList().add(training);
       service.save(training);
-      trainerService.updateTrainer(trainer);
-      traineeService.updateTrainee(trainee);
       return ResponseEntity.status(204).build();
     } catch (NoSuchElementException e) {
       log.error(e.getMessage());

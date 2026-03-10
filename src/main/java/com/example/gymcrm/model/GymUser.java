@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class User {
+public abstract class GymUser {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
@@ -19,7 +19,7 @@ public abstract class User {
   private String password;
   private boolean isActive = false;
 
-  public User(String firstName, String lastName) {
+  public GymUser(String firstName, String lastName) {
     this.firstName = firstName;
     this.lastName = lastName;
   }
