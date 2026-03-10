@@ -1,30 +1,35 @@
 package com.example.gymcrm.model;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
-@Getter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
-@EqualsAndHashCode
+@Entity
+@Table(name = "trainings")
 public class Training {
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
+
   private String trainingName;
-  private String traineeId;
-  private String trainerId;
+  @ManyToOne(cascade = CascadeType.REMOVE)
+  private Trainee traineeId;
+  @ManyToOne
+  private Trainer trainerId;
+  @ManyToOne
   private TrainingType trainingType;
   private LocalDateTime trainingTime;
-  private Duration duration;
+  private Double duration;
 
-//  @Override
-//  public boolean equals(Object o) {
-//    if (o == null || getClass() != o.getClass()) return false;
-//    Training training = (Training) o;
-//    return Objects.equals(trainingName, training.trainingName) && Objects.equals(traineeId, training.traineeId) && Objects.equals(trainerId, training.trainerId) && Objects.equals(trainingType, training.trainingType) && Objects.equals(trainingTime, training.trainingTime) && Objects.equals(duration, training.duration);
-//  }
+  public Training(String trainingName, Trainee traineeId, Trainer trainerId, TrainingType trainingType, LocalDateTime trainingTime, Double duration) {
+    this.trainingName = trainingName;
+    this.traineeId = traineeId;
+    this.trainerId = trainerId;
+    this.trainingType = trainingType;
+    this.trainingTime = trainingTime;
+    this.duration = duration;
+  }
 }

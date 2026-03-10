@@ -1,20 +1,27 @@
 package com.example.gymcrm.model;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.util.Objects;
+import java.util.List;
 
-@Getter
-@AllArgsConstructor
+@Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@EqualsAndHashCode
+@Entity
+@Table(name = "trainers")
 public class Trainer extends User {
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
   private String specialization;
   private String userId;
+  @ManyToOne
   private TrainingType trainingType;
+  @OneToMany(mappedBy = "trainerId")
+  private List<Training> trainingList;
+  @ManyToMany(mappedBy = "trainers")
+  private List<Trainee> trainees;
 
   public Trainer(String firstName, String lastName, String specialization, String userId, TrainingType trainingType) {
     super(firstName, lastName);
@@ -22,12 +29,4 @@ public class Trainer extends User {
     this.userId = userId;
     this.trainingType = trainingType;
   }
-
-//  @Override
-//  public boolean equals(Object o) {
-//    if (o == null || getClass() != o.getClass()) return false;
-//    if (!super.equals(o)) return false;
-//    Trainer trainer = (Trainer) o;
-//    return Objects.equals(specialization, trainer.specialization) && Objects.equals(userId, trainer.userId) && Objects.equals(trainingType, trainer.trainingType);
-//  }
 }

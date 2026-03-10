@@ -1,6 +1,7 @@
 package com.example.gymcrm.service;
 
 import com.example.gymcrm.model.Trainee;
+import com.example.gymcrm.model.Trainer;
 import com.example.gymcrm.model.Training;
 import com.example.gymcrm.model.TrainingType;
 import com.example.gymcrm.repository.TraineeRepository;
@@ -32,7 +33,7 @@ class TrainingServiceTest {
 
   @Test
   void createTrainer() {
-    Training training = new Training("trainingName","traineeId","trainerId",new TrainingType("trainingType"), LocalDateTime.now(), Duration.ofHours(1));
+    Training training = new Training("trainingName",new Trainee(),new Trainer(),new TrainingType("trainingType"), LocalDateTime.now(), 1.5);
     trainingService.createTraining(training);
     Mockito.verify(trainingRepository).save(training);
   }
@@ -41,7 +42,7 @@ class TrainingServiceTest {
   void getTrainer() {
     List<Training> trainings = new ArrayList<>();
     for (int i = 1; i <= 5; i++) {
-      Training training = new Training("trainingName"+i,"traineeId"+i,"trainerId"+i,new TrainingType("trainingType"+i), LocalDateTime.now(), Duration.ofHours(1));
+      Training training = new Training("trainingName"+i,new Trainee(),new Trainer(),new TrainingType("trainingType"+i), LocalDateTime.now(), 1.5);
       trainings.add(training);
     }
     Mockito.when(trainingRepository.getAll()).thenReturn(trainings);
