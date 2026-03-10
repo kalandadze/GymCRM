@@ -12,7 +12,7 @@ public class TraineeProfile {
   private String firstName;
   private String lastName;
   private LocalDate dateOfBirth;
-  private String Address;
+  private String address;
   private boolean IsActive;
   private List<TrainerProfile> trainersList;
 

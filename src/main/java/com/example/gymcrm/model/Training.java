@@ -16,7 +16,7 @@ public class Training {
   private Long id;
 
   private String trainingName;
-  @ManyToOne(cascade = CascadeType.REMOVE)
+  @ManyToOne(cascade = CascadeType.PERSIST)
   private Trainee traineeId;
   @ManyToOne
   private Trainer trainerId;

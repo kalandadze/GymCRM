@@ -8,7 +8,7 @@ import org.hibernate.annotations.Immutable;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "traingTypes")
+@Table(name = "trainingTypes")
 @Immutable
 public class TrainingType {
   @Id
