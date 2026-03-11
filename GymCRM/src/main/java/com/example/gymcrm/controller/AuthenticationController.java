@@ -36,7 +36,6 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "500", description = "Application failed to process the request")
     }
     )
-    @Deprecated
     public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
         try {
             String token = userService.login(username, password);

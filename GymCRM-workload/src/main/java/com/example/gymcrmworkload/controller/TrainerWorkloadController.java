@@ -19,7 +19,7 @@ public class TrainerWorkloadController {
     }
 
     @PostMapping
-    public ResponseEntity<?> handleNewTrainerWorkload(@RequestBody TrainerWorkloadRequest trainerWorkloadRequest) {
+    public ResponseEntity<?> updateTrainerWorkload(@RequestBody TrainerWorkloadRequest trainerWorkloadRequest) {
         try {
             trainerWorkloadService.handleNewTrainerWorkload(trainerWorkloadRequest);
             return ResponseEntity.ok().build();
