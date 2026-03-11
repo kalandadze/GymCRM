@@ -3,8 +3,12 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/EpamGymCRM.iml" filepath="$PROJECT_DIR$/.idea/EpamGymCRM.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GymCRM-Eureka.main.iml" filepath="$PROJECT_DIR$/.idea/modules/GymCRM-Eureka.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GymCRM-Eureka.test.iml" filepath="$PROJECT_DIR$/.idea/modules/GymCRM-Eureka.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/GymCRM-workload.main.iml" filepath="$PROJECT_DIR$/.idea/modules/GymCRM-workload.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GymCRM-workload.test.iml" filepath="$PROJECT_DIR$/.idea/modules/GymCRM-workload.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/GymCRM.main.iml" filepath="$PROJECT_DIR$/.idea/modules/GymCRM.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GymCRM.test.iml" filepath="$PROJECT_DIR$/.idea/modules/GymCRM.test.iml" />
     </modules>
   </component>
 </project>
